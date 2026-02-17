@@ -7,8 +7,8 @@ class Perceptron:
     self.learning_rate = learning_rate
 
   def weighted_sum(self, inputs):
-    z = np.dot(inputs, self.weights[1:]) + self.weights[0]
-    return z
+    Z = np.dot(inputs, self.weights[1:]) + self.weights[0]
+    return Z
 
   def predict(self, x):
     z = np.dot(x, self.weights[1:])+self.weights[0]
@@ -64,10 +64,10 @@ if __name__=="__main__":
     error = np.linspace(-10, 10, 1000)
     np.random.shuffle(error)
     y_synt = y + error
-    plt.plot(X, y_synt, "o", c = "r")
-    plt.plot(X, y)
+    # plt.plot(X, y_synt, "o", c = "r")
+    # plt.plot(X, y)
 
     nn = Perceptron(1)
     h = nn.fit(X.reshape(-1, 1), y_synt)
-    plt.plot(h['mse'], h['k'])
+    plt.plot(h['mse'], h['k'], "o")
     plt.show()
