@@ -7,18 +7,18 @@ class Perceptron:
     self.learning_rate = learning_rate
 
   def weighted_sum(self, inputs):
-    Z=np.dot(inputs, self.weights[1:])+self.weights[0]
-    return Z
+    z = np.dot(inputs, self.weights[1:]) + self.weights[0]
+    return z
 
   def predict(self, x):
-    z=np.dot(x, self.weights[1:])+self.weights[0]
+    z = np.dot(x, self.weights[1:])+self.weights[0]
     return z
     
   def loss(self, prediction, target):
     return np.mean((prediction-target)**2)
   
-  def fit(self, X, y, tolerance=10e-5,  n_epochs = 100):
-    self.history = []
+  def fit(self, X, y, tolerance=10e-5,  n_epochs = 1):
+    history = {'k': [], 'b':[], 'mse': []}
     for _ in range(n_epochs):
         for x, y_s in zip(X, y):
           y_pred = self.predict(x)
@@ -26,7 +26,7 @@ class Perceptron:
 
           mse = self.loss(y_pred, y_s)
           if mse < tolerance:
-              return self.history
+              return history
           
           change_w = -2 * err * x
           change_b = -2 * err
@@ -35,8 +35,11 @@ class Perceptron:
           b_new = self.weights[0] - self.learning_rate * change_b
           self.weights[1:] = w_new
           self.weights[0] = b_new
-          self.history.append(mse)
-    return self.history
+          history['mse'].append(mse)
+          history['k'].append(self.weights[1:].item())
+          history['b'].append(self.weights[0])
+
+    return history
 
 
 if __name__=="__main__":
@@ -64,4 +67,7 @@ if __name__=="__main__":
     plt.plot(X, y_synt, "o", c = "r")
     plt.plot(X, y)
 
+    nn = Perceptron(1)
+    h = nn.fit(X.reshape(-1, 1), y_synt)
+    plt.plot(h['mse'], h['k'])
     plt.show()
