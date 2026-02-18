@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 class Perceptron:
-  def __init__(self, num_inputs, learning_rate=0.01):
+  def __init__(self, num_inputs, learning_rate=0.0001):
     self.weights = np.random.rand(num_inputs+1)
     self.learning_rate = learning_rate
 
@@ -17,7 +18,7 @@ class Perceptron:
   def loss(self, prediction, target):
     return np.mean((prediction-target)**2)
   
-  def fit(self, X, y, tolerance=10e-5,  n_epochs = 1):
+  def fit(self, X, y, tolerance=10e-5,  n_epochs = 100):
     history = {'k': [], 'b':[], 'mse': []}
     for _ in range(n_epochs):
         for x, y_s in zip(X, y):
@@ -61,13 +62,38 @@ if __name__=="__main__":
     b = 3
     X = np.linspace(-10, 10, 1000)
     y = k * X + b
-    error = np.linspace(-10, 10, 1000)
+    error = np.linspace(0, 2, 1000)
     np.random.shuffle(error)
     y_synt = y + error
     # plt.plot(X, y_synt, "o", c = "r")
     # plt.plot(X, y)
 
+    indices = np.random.permutation(len(X))
+    X_shuffled = X[indices]
+    y_shuffled = y_synt[indices]
+
     nn = Perceptron(1)
-    h = nn.fit(X.reshape(-1, 1), y_synt)
-    plt.plot(h['mse'], h['k'], "o")
-    plt.show()
+    h = nn.fit(X_shuffled.reshape(-1, 1), y_shuffled)
+    # plt.plot(h['mse'], h['k'], "o")
+    # plt.show()
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter3d(
+       x = h['k'],
+       y = h['b'],
+       z = h['mse'],
+       mode = 'markers',
+       marker = dict(
+          size = 5,
+          color = h['mse'],
+       )
+    ))
+
+    fig.show()
+
+print(f"K: {nn.weights[1].item():.3f}")
+print(f"B: {nn.weights[0]:.3f}")
+
+final_pred = nn.predict(X.reshape(-1, 1))
+print(f"MSE: {nn.loss(final_pred, y_synt):.3f}")
