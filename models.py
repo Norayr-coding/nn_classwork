@@ -69,5 +69,6 @@ if __name__=="__main__":
 
     nn = Perceptron(1)
     h = nn.fit(X.reshape(-1, 1), y_synt)
-    plt.plot(h['mse'], h['k'], "o")
+    # plt.plot(h['mse'], h['k'], "o")
+    # plt.plot(h['mse'])
     plt.show()
