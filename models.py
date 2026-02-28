@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 class Perceptron:
-  def __init__(self, num_inputs, learning_rate=0.0001):
+  def __init__(self, num_inputs, learning_rate=0.003):
     self.weights = np.random.rand(num_inputs+1)
     self.learning_rate = learning_rate
 
@@ -18,30 +18,39 @@ class Perceptron:
   def loss(self, prediction, target):
     return np.mean((prediction-target)**2)
   
-  def fit(self, X, y, tolerance=10e-5,  n_epochs = 100):
-    history = {'k': [], 'b':[], 'mse': []}
-    for _ in range(n_epochs):
-        for x, y_s in zip(X, y):
-          y_pred = self.predict(x)
-          err = (y_s - y_pred)
+  def fit(self, X, y, tolerance=10e-5, n_epochs=100, batch_size=10):
+    history = {'k': [], 'b': [], 'mse': []}
+    n_samples = len(X)
 
-          mse = self.loss(y_pred, y_s)
-          if mse < tolerance:
-              return history
-          
-          change_w = -2 * err * x
-          change_b = -2 * err
+    for epoch in range(n_epochs):
+        lr = self.learning_rate * (0.95 ** epoch)
 
-          w_new = self.weights[1:] - self.learning_rate * change_w
-          b_new = self.weights[0] - self.learning_rate * change_b
-          self.weights[1:] = w_new
-          self.weights[0] = b_new
-          history['mse'].append(mse)
-          history['k'].append(self.weights[1:].item())
-          history['b'].append(self.weights[0])
+        indices = np.random.permutation(n_samples)
+        X = X[indices]
+        y = y[indices]
 
-    return history
+        for i in range(0, n_samples, batch_size):
+            X_batch = X[i:i+batch_size]
+            y_batch = y[i:i+batch_size]
 
+            y_pred = self.predict(X_batch)
+
+            error = y_batch - y_pred
+            mse = np.mean(error**2)
+
+            if mse < tolerance:
+                return history
+            
+            grad_w = -2 * np.dot(X_batch.T, error) / batch_size
+            grad_b = -2 * np.mean(error)
+            self.weights[1:] -= lr * grad_w
+            self.weights[0]  -= lr * grad_b
+
+            history['mse'].append(mse)
+            history['k'].append(self.weights[1])
+            history['b'].append(self.weights[0])
+
+    return history 
 
 if __name__=="__main__":
 
@@ -62,26 +71,20 @@ if __name__=="__main__":
     b = 3
     X = np.linspace(-10, 10, 1000)
     y = k * X + b
-    error = np.linspace(0, 2, 1000)
-    np.random.shuffle(error)
+    error = np.random.normal(0, 2, size = X.shape[0])
+    # error = np.linspace(0, 2, 1000)
+    # np.random.shuffle(error)
     y_synt = y + error
     # plt.plot(X, y_synt, "o", c = "r")
     # plt.plot(X, y)
 
-    indices = np.random.permutation(len(X))
-    X_shuffled = X[indices]
-    y_shuffled = y_synt[indices]
-
     nn = Perceptron(1)
     h = nn.fit(X.reshape(-1, 1), y_synt)
+    final_pred = nn.predict(X.reshape(-1, 1))
     # plt.plot(h['mse'], h['k'], "o")
     # plt.plot(h['mse'])
-    plt.show()
-
-    h = nn.fit(X_shuffled.reshape(-1, 1), y_shuffled)
-    # plt.plot(h['mse'], h['k'], "o")
     # plt.show()
-
+    
     fig = go.Figure()
 
     fig.add_trace(go.Scatter3d(
@@ -99,6 +102,5 @@ if __name__=="__main__":
 
     print(f"K: {nn.weights[1].item():.3f}")
     print(f"B: {nn.weights[0]:.3f}")
-
-    final_pred = nn.predict(X.reshape(-1, 1))
     print(f"MSE: {nn.loss(final_pred, y_synt):.3f}")
+    
