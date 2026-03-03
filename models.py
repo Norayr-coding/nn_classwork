@@ -62,7 +62,6 @@ class Perceptron:
 
     return history 
 
-  
 
 if __name__=="__main__":
 
