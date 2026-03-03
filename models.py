@@ -18,7 +18,16 @@ class Perceptron:
   def loss(self, prediction, target):
     return np.mean((prediction-target)**2)
   
-  def fit(self, X, y, tolerance=10e-5, n_epochs=100, batch_size=10):
+  def stoch(self, X, y, tolerance=10e-5, n_epochs=100):
+     return self.fit(X, y, tolerance, n_epochs, batch_size = 1)
+
+  def batch(self, X, y, tolerance=10e-5, n_epochs=100):
+     return self.fit(X, y, tolerance, n_epochs, batch_size = 1000)
+
+  def mini_batch(self, X, y, tolerance=10e-5, n_epochs=100):
+     return self.fit(X, y, tolerance, n_epochs, batch_size = 10)
+  
+  def fit(self, X, y, tolerance=10e-5, n_epochs=100, batch_size=1000):
     history = {'k': [], 'b': [], 'mse': []}
     n_samples = len(X)
 
@@ -33,7 +42,7 @@ class Perceptron:
             X_batch = X[i:i+batch_size]
             y_batch = y[i:i+batch_size]
 
-            y_pred = self.predict(X_batch)
+            y_pred = self.predict(X_batch) #forward pass
 
             error = y_batch - y_pred
             mse = np.mean(error**2)
@@ -41,6 +50,7 @@ class Perceptron:
             if mse < tolerance:
                 return history
             
+            #backward pass
             grad_w = -2 * np.dot(X_batch.T, error) / batch_size
             grad_b = -2 * np.mean(error)
             self.weights[1:] -= lr * grad_w
@@ -51,6 +61,8 @@ class Perceptron:
             history['b'].append(self.weights[0])
 
     return history 
+
+  
 
 if __name__=="__main__":
 
@@ -79,7 +91,7 @@ if __name__=="__main__":
     # plt.plot(X, y)
 
     nn = Perceptron(1)
-    h = nn.fit(X.reshape(-1, 1), y_synt)
+    h = nn.batch(X.reshape(-1, 1), y_synt)
     final_pred = nn.predict(X.reshape(-1, 1))
     # plt.plot(h['mse'], h['k'], "o")
     # plt.plot(h['mse'])
