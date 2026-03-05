@@ -1,8 +1,9 @@
 import numpy as np
 from sklearn.datasets import make_blobs
+import plotly.graph_objects as go
 
 class simple_nn:
-  def __init__(self, num_inputs, learning_rate=0.003, hidden_size = 3):
+  def __init__(self, num_inputs, learning_rate=0.003, hidden_size=1):
     self.lr = learning_rate
     self.W1 = np.random.randn(num_inputs, hidden_size)
     self.b1 = np.zeros((1, hidden_size))
@@ -112,12 +113,12 @@ class simple_nn:
                 grad_L_W1, grad_L_W2, grad_L_b1, grad_L_b2
             )
 
-        history['W1'].append(self.W1.copy())
-        history['W2'].append(self.W2.copy())
-        history['b1'].append(self.b1.copy())
-        history['b2'].append(self.b2.copy())
+            history['W1'].append(self.W1.copy())
+            history['W2'].append(self.W2.copy())
+            history['b1'].append(self.b1.copy())
+            history['b2'].append(self.b2.copy())
 
-        if epoch % 100 == 0:
+        if epoch % 2 == 0:
           print(f'Epoch {epoch}, Loss: {loss}')
 
     return history
@@ -125,11 +126,11 @@ class simple_nn:
 
 if __name__=="__main__":
 
-  X, y = make_blobs(n_samples=500, centers=2, n_features=2, random_state=42)
+  X, y = make_blobs(n_samples=500, centers=2, n_features=1, random_state=42)
   y = y.reshape(-1,1)   
 
   input_size = X.shape[1]
-  hidden_size = 3  
+  hidden_size = 1
 
   W1 = np.random.randn(input_size, hidden_size)
   b1 = np.zeros((1, hidden_size))
@@ -138,7 +139,28 @@ if __name__=="__main__":
 
 
   nn = simple_nn(num_inputs=input_size)
-  history = nn.train(X, y)
+  history = nn.train(X, y, epochs=50)
   y_pred = nn.predict(X)
   accuracy = np.mean(y_pred == y)
   print(accuracy)
+
+  w1_values = [w[0,0] for w in history['W1']]
+  b1_values = [b[0,0] for b in history['b1']]
+  loss_values = history['loss'][:len(w1_values)]
+  # print(len(w1_values), len(b1_values), len(loss_values))
+
+  fig = go.Figure()
+  fig.add_trace(go.Scatter3d(
+      x=w1_values,
+      y=b1_values,
+      z=loss_values,
+      mode='markers',
+      marker=dict(
+          size=5,
+          color=loss_values,
+          colorscale='Viridis'
+      )
+  ))
+  fig.show()
+
+    
