@@ -24,25 +24,32 @@ print("Dimension of a single data sample:", sample_image.shape)
 
 model = SimpleNN()
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.001)
+optimizer = optim.SGD(model.parameters(), lr = 0.01)
+ 
+def train_one_epoch(loader, model):
+    avg_loss = []
+    for x, y in loader:
+        y_pred = model(x)
+        loss = criterion(y_pred, y)
+        avg_loss.append(loss.item())
 
-def train(model, loader, optimizer, criterion, epochs = 3):
-    model.train()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    return np.mean(avg_loss)
 
+def train(model, loader, epochs = 5):
+    loss_l = []
     for epoch in range(epochs):
-        running_loss = 0.0
-        for images, labels in loader:
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            running_loss += loss.item()
+        loss = train_one_epoch(loader, model)
+        loss_l.append(loss)
+        print(f"Epoch {epoch+1} - Loss: {loss:.2f}")
+        # PATH = 'model_weights.pth'
+        # torch.save(model.state_dict(), PATH)
+    return loss_l
         
-        print(f"Epoch {epoch+1} - Loss: {running_loss/len(loader):.4f}")
-
 
 if __name__ == '__main__':
     print("Starting training")
-    train(model, train_loader, optimizer, criterion)
+    loss = train(model, train_loader)
     print("Training finished")
