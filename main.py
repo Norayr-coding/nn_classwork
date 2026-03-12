@@ -43,9 +43,9 @@ def train(model, loader, epochs = 5):
     for epoch in range(epochs):
         loss = train_one_epoch(loader, model)
         loss_l.append(loss)
-        print(f"Epoch {epoch+1} - Loss: {loss:.2f}")
-        # PATH = 'model_weights.pth'
-        # torch.save(model.state_dict(), PATH)
+        print(f"Epoch {epoch} - Loss: {loss:.2f}")
+        PATH = f'.\model_checkpoints\mnist_simplenn_weights_epoch{epoch}.pth'
+        torch.save(model.state_dict(), PATH)
     return loss_l
         
 
